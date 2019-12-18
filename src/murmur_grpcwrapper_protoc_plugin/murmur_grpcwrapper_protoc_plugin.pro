@@ -9,9 +9,17 @@ TEMPLATE = app
 TARGET = protoc-gen-murmur-grpcwrapper
 LANGUAGE = C++
 SOURCES = main.cpp
+unix {
 LIBS = -lprotoc
+}
+win32 {
+#at least for msvc version, not sure if will work for MXE...
+  LIBS = -llibprotoc -llibprotobuf
+  CONFIG *= console
+}
 CONFIG -= qt
 CONFIG += c++11
-must_pkgconfig(protobuf)
+#we *do* seem to have acceptable protoc in place, but no pkg-config on windows, let 'er through anyway!!!
+#must_pkgconfig(protobuf)
 
 include(../../qmake/symbols.pri)

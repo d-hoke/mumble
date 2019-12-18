@@ -160,7 +160,13 @@ grpc {
   }
 
   DEFINES *= USE_GRPC
+  unix {
   INCLUDEPATH *= murmur_grpc
+  }
+  win32 {
+#  INCLUDEPATH *= $$(MUMBLE_PREFIX)/src/murmur/murmur_grpc
+  INCLUDEPATH *= murmur_grpc
+  }
   LIBS *= -lmurmur_grpc
 
   HEADERS *= MurmurGRPCImpl.h
@@ -168,7 +174,51 @@ grpc {
 
   GRPC_WRAPPER = MurmurRPC.proto
   grpc_wrapper.output = MurmurRPC.proto.Wrapper.cpp
+#  win32 {
+  win32-msvc* {
+#  grpc_wrapper.commands = $${PROTOC} --plugin=$$system(cygpath -w ${DESTDIR}protoc-gen-murmur-grpcwrapper) -I. --murmur-grpcwrapper_out=. MurmurRPC.proto
+#  grpc_wrapper.commands = $${PROTOC} --plugin=$$system(cygpath -w $${DESTDIR}protoc-gen-murmur-grpcwrapper) -I. --murmur-grpcwrapper_out=. MurmurRPC.proto
+#  grpc_wrapper.commands = $${PROTOC} --plugin=$$system(cygpath -w ${DESTDIR}protoc-gen-murmur-grpcwrapper) -I. --murmur-grpcwrapper_out=. MurmurRPC.proto
+#  grpc_wrapper.commands = $${PROTOC} --plugin=$$system(cygpath -w ${DESTDIR_TARGET}protoc-gen-murmur-grpcwrapper) -I. --murmur-grpcwrapper_out=. MurmurRPC.proto
+#  grpc_wrapper.commands = $${PROTOC} --plugin=$$system(cygpath -w ${DESTDIR_TARGET}protoc-gen-murmur-grpcwrapper.exe) -I. --murmur-grpcwrapper_out=. MurmurRPC.proto
+#  grpc_wrapper.commands = $${PROTOC} --plugin=$$system(cygpath -w ${DESTDIR}protoc-gen-murmur-grpcwrapper.exe) -I. --murmur-grpcwrapper_out=. MurmurRPC.proto
+#  grpc_wrapper.commands = $${PROTOC} --plugin=$$system(cygpath -w $${DESTDIR}/protoc-gen-murmur-grpcwrapper.exe) -I. --murmur-grpcwrapper_out=. MurmurRPC.proto
+#  grpc_wrapper.commands = $${PROTOC} --plugin=$$system(cygpath -w $${DESTDIR}/protoc-gen-murmur-grpcwrapper) -I. --murmur-grpcwrapper_out=. MurmurRPC.proto
+#  grpc_wrapper.commands = $${PROTOC} --plugin=$${DESTDIR}/protoc-gen-murmur-grpcwrapper -I. --murmur-grpcwrapper_out=. MurmurRPC.proto
+#  grpc_wrapper.commands = $${PROTOC} --plugin=$$system(cygpath -w $${DESTDIR}/protoc-gen-murmur-grpcwrapper) -I. --murmur-grpcwrapper_out=. MurmurRPC.proto
+#  grpc_wrapper.commands = $${PROTOC} --plugin=protoc-gen-murmur-grpcwrapper -I. --murmur-grpcwrapper_out=. MurmurRPC.proto
+#  grpc_wrapper.commands = $${PROTOC} --plugin=protoc-gen-murmur-grpcwrapper.exe -I. --murmur-grpcwrapper_out=. MurmurRPC.proto
+#Appears that exact plugin name we pass it not honored, but only searched for on the path via commandline arg to CreateProcessA()...
+#
+  grpc_wrapper.commands = $${PROTOC} --plugin=protoc-gen-grpc=$$system(cygpath -w $${DESTDIR}/protoc-gen-murmur-grpcwrapper) -I. --murmur-grpcwrapper_out=. MurmurRPC.proto
+#  grpc_wrapper.commands = $${PROTOC} --plugin=protoc-gen-grpc=$$system(cygpath -w protoc-gen-murmur-grpcwrapper) -I. --murmur-grpcwrapper_out=. MurmurRPC.proto
+#  grpc_wrapper.commands = $${PROTOC} --plugin=protoc-gen-grpc=$$system(cygpath -w protoc-gen-murmur-grpcwrapper.exe) -I. --murmur-grpcwrapper_out=. MurmurRPC.proto
+
+#    INCLUDEPATH *= $${MUMBLE_PREFIX}/grpc-windows/grpc/include
+    INCLUDEPATH *= $${MUMBLE_PREFIX}/grpc/include
+	QMAKE_CFLAGS *= -WX-
+	#TBD: maybe issues with compiler other than VC, but so far mxe build attempts have failed anyway...
+#	LIBS *= -lgrpc++ -lgrpc -lgpr -laddress_sorting -lcrypto -lssl -lcares
+#	LIBS *= -lgrpc++ -lgrpc -lgpr -laddress_sorting          -lssl -lcares
+#	LIBS *= -lgrpc++ -lgrpc -lgpr -laddress_sorting -lssl -lcrypto -lcares
+	LIBS *= -lgrpc++ -lgrpc -lgpr -laddress_sorting                -lcares
+#	QMAKE_LIBDIR *= $${MUMBLE_GRPC_PREFIX}/vsprojects/x64/$${MUMBLE_CONFIGURATION}
+#	QMAKE_LIBDIR *= $${MUMBLE_GRPC_PREFIX}/bin/grpc/$${MUMBLE_CONFIGURATION}
+#	QMAKE_LIBDIR *= $${MUMBLE_GRPC_PREFIX}/bin/
+	QMAKE_LIBDIR *= $${MUMBLE_PREFIX} # to ref grpc/bin
+	#TBD: Will anything of this sort be needed...
+	#QMAKE_LFLAGS *= -Wl,-rpath,$$(MUMBLE_GRPC_PREFIX)/vsprojects/x64/$$(MUMBLE_BUILD_CONFIGURATION)
+	#"fatal error C1905: Front end and back end not compatible (must target same processor)."
+	#QMAKE_LFLAGS *= /Libpath:$$(MUMBLE_GRPC_PREFIX)/vsprojects/x64/$$(MUMBLE_BUILD_CONFIGURATION)
+#	QMAKE_LFLAGS *= /Libpath:$$(MUMBLE_GRPC_PREFIX)/bin/grpc/$$(MUMBLE_BUILD_CONFIGURATION) /NODEFAULTLIB:LIBCMT
+#	QMAKE_LFLAGS *= /Libpath:$$(MUMBLE_GRPC_PREFIX)/bin/grpc/$$(MUMBLE_BUILD_CONFIGURATION)
+	QMAKE_LFLAGS *= /Libpath:$$(MUMBLE_GRPC_PREFIX)/bin # to ref grpc/bin
+	#QMAKE_LFLAGS *= /Libpath:$$(MUMBLE_GRPC_PREFIX)/vsprojects/Release #$$(MUMBLE_BUILD_CONFIGURATION)
+#	CONFIG += staticlib
+  }
+  unix {
   grpc_wrapper.commands = $${PROTOC} --plugin=${DESTDIR}protoc-gen-murmur-grpcwrapper -I. --murmur-grpcwrapper_out=. MurmurRPC.proto
+  }
   grpc_wrapper.input = GRPC_WRAPPER
   grpc_wrapper.variable_out =
   QMAKE_EXTRA_COMPILERS += grpc_wrapper
