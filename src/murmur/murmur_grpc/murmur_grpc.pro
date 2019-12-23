@@ -35,7 +35,9 @@ win32 {
 #  grpc.commands = $${PROTOC} --grpc_out=. --plugin=protoc-gen-grpc=c:\MumbleBuild\win32-static-1.3.x-2019-10-26-ce82683-899\cygwin\bin\grpc_protoc_plugins\grpc_cpp_plugin.exe -I. -I.. ${QMAKE_FILE_NAME}
 #  grpc.commands = $${PROTOC} --grpc_out=. --plugin=protoc-gen-grpc=c:\MumbleBuild\win32-static-1.3.x-2019-10-26-ce82683-899\cygwin\bin\grpc_protoc_plugins\grpc_cpp_plugin.exe -I. -I.. -I../protobuf/include ${QMAKE_FILE_NAME}
 #  grpc.commands = $${PROTOC} --grpc_out=. --plugin=protoc-gen-grpc=c:\MumbleBuild\win32-static-1.3.x-2019-10-26-ce82683-899\grpc\bin\grpc_cpp_plugin.exe -I. -I.. -I../protobuf/include ${QMAKE_FILE_NAME}
-  grpc.commands = $${PROTOC} --grpc_out=. --plugin=protoc-gen-grpc=c:\MumbleBuild\win32-static-1.3.x-2019-10-26-ce82683-899\grpc\bin\grpc_cpp_plugin.exe -I. -I.. -I../grpc/protobuf/include ${QMAKE_FILE_NAME}
+#  grpc.commands = $${PROTOC} --grpc_out=. --plugin=protoc-gen-grpc=c:\MumbleBuild\win32-static-1.3.x-2019-10-26-ce82683-899\grpc\bin\grpc_cpp_plugin.exe -I. -I.. -I$${MUMBLE_PREFIX}/protobuf/include ${QMAKE_FILE_NAME}
+  grpc.commands = $${PROTOC} --grpc_out=. --plugin=protoc-gen-grpc=$${MUMBLE_PREFIX}\grpc\bin\grpc_cpp_plugin.exe -I. -I.. -I$${MUMBLE_PREFIX}/protobuf/include ${QMAKE_FILE_NAME}
+#  grpc.commands = $${PROTOC} --grpc_out=. --plugin=protoc-gen-grpc=c:\MumbleBuild\win32-static-1.3.x-2019-10-26-ce82683-899\grpc\bin\grpc_cpp_plugin.exe -I. -I.. -I../grpc/protobuf/include ${QMAKE_FILE_NAME}
 }
 unix {
   grpc.commands = $${PROTOC} --grpc_out=. --plugin=protoc-gen-grpc=$$system(which grpc_cpp_plugin) -I. -I.. ${QMAKE_FILE_NAME}
@@ -72,6 +74,7 @@ win32 {
 #  QMAKE_CXXFLAGS *= -std:c++11 -I$${MUMBLE_PREFIX}/protobuf/include/ -I$${MUMBLE_PREFIX}/grpc-windows/grpc/include/ -D_WIN32_WINNT=0x600
 #  QMAKE_CXXFLAGS *= -std:c++11 -I$${MUMBLE_PREFIX}/protobuf/include/ -I$${MUMBLE_PREFIX}/grpc/include/ -D_WIN32_WINNT=0x600
   QMAKE_CXXFLAGS *= -std:c++11 -I$${MUMBLE_PREFIX}/protobuf/src/ -I$${MUMBLE_PREFIX}/grpc/include/ -D_WIN32_WINNT=0x600
+#  QMAKE_CXXFLAGS *= -std:c++11 -I$${MUMBLE_PREFIX}/protobuf/src/ -I$${MUMBLE_PREFIX}/grpc-1.25.0/include/ -D_WIN32_WINNT=0x600
 #  QMAKE_CXXFLAGS *= -std:c++11 -I$${MUMBLE_PREFIX}/grpc/protobuf/include/ -I$${MUMBLE_PREFIX}/grpc/include/ -D_WIN32_WINNT=0x600
 #  QMAKE_CXXFLAGS *= -std:c++11 -I$${MUMBLE_PREFIX}/grpc/protobuf/include/ -I$${MUMBLE_PREFIX}/grpc/protobuf/src/ -I$${MUMBLE_PREFIX}/grpc/include/ -D_WIN32_WINNT=0x600
 #  QMAKE_CXXFLAGS *= -std:c++11 -I$${MUMBLE_PREFIX}/grpc/third_party/protobuf/include/ -I$${MUMBLE_PREFIX}/grpc/third_party/protobuf/src/ -I$${MUMBLE_PREFIX}/grpc/include/ -D_WIN32_WINNT=0x600
