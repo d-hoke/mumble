@@ -14,12 +14,16 @@ LIBS = -lprotoc
 }
 win32 {
 #at least for msvc version, not sure if will work for MXE...
-  LIBS = -llibprotoc -llibprotobuf
+  CONFIG(debug,debug|release) {
+    LIBS = -llibprotocd -llibprotobufd
+  } else {
+    LIBS = -llibprotoc -llibprotobuf
+  }
   CONFIG *= console
 }
 CONFIG -= qt
 CONFIG += c++11
-#for windows build (with grpc) we're currently fetching acceptable protobuf version 
+#for windows build (with grpc) assume it's available as we're currently fetching/building acceptable protobuf version 
 unix:must_pkgconfig(protobuf)
 
 include(../../qmake/symbols.pri)

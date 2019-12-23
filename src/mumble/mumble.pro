@@ -416,7 +416,11 @@ win32 {
 
   # Boost
   win32-msvc* {
-    LIBS *= -llibboost_system-mt -llibboost_thread-mt
+    CONFIG(debug,debug|release) {
+        LIBS *= -llibboost_system-mt-gd -llibboost_thread-mt-gd
+	} else {
+        LIBS *= -llibboost_system-mt -llibboost_thread-mt
+	}
   }
   win32-g++ {
     LIBS *= -lboost_system-mt

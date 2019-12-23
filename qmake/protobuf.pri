@@ -26,7 +26,14 @@ win32-msvc* {
 	INCLUDEPATH *= "$$PROTOBUF_PATH/include"
 	QMAKE_LIBDIR *= "$$PROTOBUF_PATH/lib"
 
-	LIBS *= -llibprotobuf
+    #likewise, how did this work in release, did I lose something?
+	#hmm, no this already above for '2.x' ...
+    #INCLUDEPATH *= "$$PROTOBUF_PATH/src"
+    CONFIG(debug,debug|release)	{
+  	    LIBS *= -llibprotobufd
+	} else {
+  	    LIBS *= -llibprotobuf
+	}
 }
 
 win32-g++ {

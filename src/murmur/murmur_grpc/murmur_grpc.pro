@@ -29,7 +29,15 @@ grpch.CONFIG *= no_link explicit_dependencies target_predeps
 
 grpc.output = ${QMAKE_FILE_BASE}.grpc.pb.cc
 grpc.depends = ${QMAKE_FILE_BASE}.pb.h
-grpc.commands = $${PROTOC} --grpc_out=. --plugin=protoc-gen-grpc=$$system(which grpc_cpp_plugin) -I. -I.. ${QMAKE_FILE_NAME}
+win32 {
+#hmm, how did it work for release, what's diff in debug?  And, do we need path since protoc doesn't really seem to correctly
+#utilize it anyway? And we had already previously added its location to path in prep.cmd...
+#  grpc.commands = $${PROTOC} --grpc_out=. --plugin=protoc-gen-grpc=$$system(which grpc_cpp_plugin) -I. -I.. ${QMAKE_FILE_NAME}
+  grpc.commands = $${PROTOC} --grpc_out=. --plugin=protoc-gen-grpc=$$system(cygpath -w $$system(which grpc_cpp_plugin)) -I. -I.. ${QMAKE_FILE_NAME}
+#  grpc.commands = $${PROTOC} --grpc_out=. --plugin=protoc-gen-grpc=grpc_cpp_plugin -I. -I.. ${QMAKE_FILE_NAME}
+} else {
+  grpc.commands = $${PROTOC} --grpc_out=. --plugin=protoc-gen-grpc=$$system(which grpc_cpp_plugin) -I. -I.. ${QMAKE_FILE_NAME}
+}
 grpc.input = GRPC
 grpc.CONFIG *= no_link explicit_dependencies
 grpc.variable_out = SOURCES
