@@ -299,8 +299,8 @@ int main(int argc, char **argv) {
 		//read command from input, pass to server, report any returns
 		//std::cout << "rpccontinuous mode not yet implemented!" << std::endl;
 		//std::cerr << "rpccontinuous mode not yet implemented!" << std::endl;
-		QString rpcError = MainWindow::tr("Error: rpccontinuous mode not yet implemented!");
-		qWarning() << rpcError ;
+		//QString rpcError = MainWindow::tr("Error: rpccontinuous mode not yet implemented!");
+		//qWarning() << rpcError ;
 #if 0
 #if defined(Q_OS_WIN)
 		QMessageBox::information(NULL, MainWindow::tr("RPC"), rpcError);
@@ -755,8 +755,11 @@ int main(int argc, char **argv) {
 		//least for now, avoid initial connect dialog ... g.mw->on_qaServerConnect_triggered(true);
 	}
 
-	if (! g.bQuit)
-		res=a.exec();
+	if (!g.bQuit)
+	{
+		std::cout << "mumble init done entering gui procid " << GetCurrentProcessId() << std::endl ;
+		res = a.exec();
+	}
 
 	g.s.save();
 

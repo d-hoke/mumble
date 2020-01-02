@@ -332,9 +332,12 @@ void SocketRPCClient::processXml() {
 				}
 				else if (tokenList[0] == "hide") {
 					//g.mw->hideEvent.trigger();
+					//g.mw->hide();
+					g.mw->setVisible(false);
 				}
 				else if (tokenList[0] == "unhide") {
 					//g.mw->showEvent.trigger();
+					g.mw->setVisible(true);
 				}
 				else if (tokenList[0] == "disconnect") {
 					//current connection implied?
