@@ -600,10 +600,12 @@ void Server::msgUserState(ServerUser *uSource, MumbleProto::UserState &msg) {
 			PERM_DENIED(uSource, root, p);
 			return;
 		}
+#if 0
 		if (pDstServerUser->qsHash.isEmpty()) {
 			PERM_DENIED_HASH(pDstServerUser);
 			return;
 		}
+#endif
 	}
 
 	// Prevent self-targeting state changes from being applied to others
@@ -913,6 +915,7 @@ void Server::msgChannelState(ServerUser *uSource, MumbleProto::ChannelState &msg
 		}
 		
 		ChanACL::Perm perm = msg.temporary() ? ChanACL::MakeTempChannel : ChanACL::MakeChannel;
+#if 0
 		if (! hasPermission(uSource, p, perm)) {
 			PERM_DENIED(uSource, p, perm);
 			return;
@@ -927,6 +930,7 @@ void Server::msgChannelState(ServerUser *uSource, MumbleProto::ChannelState &msg
 			PERM_DENIED_TYPE(TemporaryChannel);
 			return;
 		}
+#endif
 
 		c = addChannel(p, qsName, msg.temporary(), msg.position(), msg.max_users());
 		hashAssign(c->qsDesc, c->qbaDescHash, qsDesc);
@@ -1034,10 +1038,12 @@ void Server::msgChannelState(ServerUser *uSource, MumbleProto::ChannelState &msg
 		QList<Channel *> qlRemove;
 
 		if (msg.links_add_size() || msg.links_remove_size()) {
+#if 0
 			if (! hasPermission(uSource, c, ChanACL::LinkChannel)) {
 				PERM_DENIED(uSource, c, ChanACL::LinkChannel);
 				return;
 			}
+#endif
 			if (msg.links_remove_size()) {
 				for (int i=0;i < msg.links_remove_size(); ++i) {
 					unsigned int link = msg.links_remove(i);
@@ -1053,10 +1059,12 @@ void Server::msgChannelState(ServerUser *uSource, MumbleProto::ChannelState &msg
 					Channel *l = qhChannels.value(link);
 					if (! l)
 						return;
+#if 0
 					if (! hasPermission(uSource, l, ChanACL::LinkChannel)) {
 						PERM_DENIED(uSource, l, ChanACL::LinkChannel);
 						return;
 					}
+#endif
 					qlAdd << l;
 				}
 			}

@@ -140,6 +140,8 @@ MainWindow::MainWindow(QWidget *p) : QMainWindow(p) {
 	connect(qmChannel, SIGNAL(aboutToShow()), this, SLOT(qmChannel_aboutToShow()));
 	connect(qteChat, SIGNAL(entered(QString)), this, SLOT(sendChatbarMessage(QString)));
 
+	connect(this, SIGNAL(qaServerConnect_signal(QSharedPointer<ConnectDialog>)), this, SLOT(qaServerConnect_action(QSharedPointer<ConnectDialog>)));
+
 	// Tray
 	connect(qstiIcon, SIGNAL(messageClicked()), this, SLOT(showRaiseWindow()));
 	connect(qaShow, SIGNAL(triggered()), this, SLOT(showRaiseWindow()));
@@ -1132,14 +1134,37 @@ void MainWindow::setupView(bool toggle_minimize) {
 	}
 }
 
-void MainWindow::on_qaServerConnect_triggered(bool autoconnect) {
-	ConnectDialog *cd = new ConnectDialog(this, autoconnect);
-	int res = cd->exec();
+void MainWindow::qaServerConnect_action(QSharedPointer<ConnectDialog> spCD) {
+	recreateServerHandler();
+	qsDesiredChannel = QString();
+	rtLast = MumbleProto::Reject_RejectType_None;
+	bRetryServer = true;
+	qaServerDisconnect->setEnabled(true);
+	g.l->log(Log::Information, tr("Connecting to server %1.").arg(Log::msgColor(Qt::escape(spCD->qsServer), Log::Server)));
+	g.sh->setConnectionInfo(spCD->qsServer, spCD->usPort, spCD->qsUsername, spCD->qsPassword);
+	g.sh->start(QThread::TimeCriticalPriority);
+	//TBD: Apparently, can't just let the dialog expire, a ...::DeleteLater() is probably needed, as apparently QObject's are to
+	//be deleted in the same thread in which they are created.
+}
 
-	if (cd->qsServer.isEmpty() || (cd->usPort==0) || cd->qsUsername.isEmpty())
+//void MainWindow::qaServerConnect_signal(QSharedPointer<ConnectDialog> spCD) {
+//	this->qaServerConnect_action(spCD);
+//}
+
+void MainWindow::on_qaServerConnect_triggered(bool autoconnect) {
+	//ConnectDialog *cd = new ConnectDialog(this, autoconnect);
+	//std::shared_ptr<ConnectDialog> spcd = std::make_shared<ConnectDialog>(this, autoconnect);
+	QSharedPointer<ConnectDialog> spcd = QSharedPointer<ConnectDialog>(new ConnectDialog(this,autoconnect), &QObject::deleteLater);
+	int res = spcd->exec();
+
+	if (spcd->qsServer.isEmpty() || (spcd->usPort==0) || spcd->qsUsername.isEmpty())
 		res = QDialog::Rejected;
 
 	if (res == QDialog::Accepted) {
+#if 1
+		//qaServerConnect_action.trigger(cd);
+		emit qaServerConnect_signal(spcd);
+#else
 		recreateServerHandler();
 		qsDesiredChannel = QString();
 		rtLast = MumbleProto::Reject_RejectType_None;
@@ -1148,8 +1173,9 @@ void MainWindow::on_qaServerConnect_triggered(bool autoconnect) {
 		g.l->log(Log::Information, tr("Connecting to server %1.").arg(Log::msgColor(Qt::escape(cd->qsServer), Log::Server)));
 		g.sh->setConnectionInfo(cd->qsServer, cd->usPort, cd->qsUsername, cd->qsPassword);
 		g.sh->start(QThread::TimeCriticalPriority);
+#endif
 	}
-	delete cd;
+	//delete cd;
 }
 
 void MainWindow::on_Reconnect_timeout() {

@@ -136,6 +136,7 @@ int main(int argc, char **argv) {
 	bool suppressIdentity = false;
 	bool customJackClientName = false;
 	bool bRpcMode = false;
+	bool bRpcContMode = false, bRpcContCreateConsole = false;
 	QString rpcCommand;
 	QUrl url;
 	if (a.arguments().count() > 1) {
@@ -180,9 +181,9 @@ int main(int argc, char **argv) {
 					"Usage: mumble rpc <action> [options]\n"
 					"\n"
 					"It is possible to remote control a running instance of Mumble by using\n"
-					"the 'mumble rpc' command.\n"
+					"the 'mumble rpc' || 'mumble rpccontinuous' command.\n"
 					"\n"
-					"Valid actions are:\n"
+					"Valid actions for 'rpc' are:\n"
 					"  mute\n"
 					"                Mute self\n"
 					"  unmute\n"
@@ -195,6 +196,10 @@ int main(int argc, char **argv) {
 					"                Undeafen self\n"
 					"  toggledeaf\n"
 					"                Toggle self-deafen status\n"
+					"\n"
+				    "Valid action for rpccontinuous:\n"
+					"                help - to retrieve more usage detail\n"
+					"                quit - to exit (rpccontinuos and) mumble\n"
 					"\n"
 				);
 
@@ -226,6 +231,14 @@ int main(int argc, char **argv) {
 			} else if (args.at(i) == QLatin1String("-third-party-licenses") || args.at(i) == QLatin1String("--third-party-licenses")) {
 				printf("%s", qPrintable(License::printableThirdPartyLicenseInfo()));
 				return 0;
+			} else if (args.at(i) == QLatin1String("rpccontinuous")) {
+				bRpcContMode = true;
+				if (args.count() - 1 > i) {
+					if (args.at(i + 1) == QLatin1String("console")) {
+						//if (args.at(i + 1) == "console") {
+						bRpcContCreateConsole = true;
+					}
+				}
 			} else if (args.at(i) == QLatin1String("rpc")) {
 				bRpcMode = true;
 				if (args.count() - 1 > i) {
@@ -282,6 +295,193 @@ int main(int argc, char **argv) {
 #endif
 #endif
 
+	if (bRpcContMode) {
+		//read command from input, pass to server, report any returns
+		//std::cout << "rpccontinuous mode not yet implemented!" << std::endl;
+		//std::cerr << "rpccontinuous mode not yet implemented!" << std::endl;
+		QString rpcError = MainWindow::tr("Error: rpccontinuous mode not yet implemented!");
+		qWarning() << rpcError ;
+#if 0
+#if defined(Q_OS_WIN)
+		QMessageBox::information(NULL, MainWindow::tr("RPC"), rpcError);
+#endif
+		return 1 ; //TBD: implement me!
+#endif
+		//hmm, gonna have to get std in-out operable for this to work, apparently not by default for QT gui...
+		auto makeConsole = [] () {
+			FreeConsole();
+			AllocConsole();
+			AttachConsole(GetCurrentProcessId());
+#if 0
+			FILE *pFileConOut = NULL;
+			pFileConOut = freopen("CONOUT$", "wt", stdout);
+			freopen("CONOUT$", "wt", stderr);
+			FILE *pFileConIn = NULL;
+			pFileConIn = freopen("CONIN$", "rt", stdin);
+#else
+			if (nullptr == freopen("CON", "w", stdout))
+				__debugbreak();
+			if (nullptr == freopen("CON", "w", stderr))
+				__debugbreak();
+			if (nullptr == freopen("CON", "r", stdin))
+				__debugbreak();
+
+			//could this be the missing piece?
+			//(https://stackoverflow.com/questions/311955/redirecting-cout-to-a-console-in-windows)
+			std::cin.clear();
+			std::wcin.clear();
+			std::cout.clear();
+			std::wcout.clear();
+			std::cerr.clear();
+			std::wcerr.clear();
+
+#if 0
+			fprintf(stdout, "hi there stdout.\n");
+			fprintf(stderr, "hi there stderr.\n");
+			fprintf(stdout, "waiting for some input now...\n");
+			//char buf[256];
+			//std::getline(cin,buf);
+			//cin.getline(buf);
+			std::string sbuf;
+			//cin.getline(sbuf);
+			std::getline(std::cin, sbuf, '\n');
+			//std::cout.putline(sbuf);
+			//std::putline(cout, sbuf);
+			std::fputs(sbuf.c_str(), stdout);
+			//std::gets(buf);
+			fprintf(stdout, "\ndone waiting...\n");
+			//fprintf(stdout, "You entered \"%s\"\n",buf);
+			fprintf(stdout, "you entered %s\n", sbuf.c_str());
+#endif
+
+//			std::ios_base::sync_with_stdio(true);
+
+			//to-be-explored if finally giving up on original redirect effort...
+			//...https://stackoverflow.com/questions/311955/redirecting-cout-to-a-console-in-windows
+#endif
+
+			COORD coordInfo;
+			coordInfo.X = 130;
+			coordInfo.Y = 9000;
+
+//			SetConsoleScreenBufferSize(GetStdHandle(STD_OUTPUT_HANDLE), coordInfo);
+//			SetConsoleMode(GetStdHandle(STD_OUTPUT_HANDLE),ENABLE_QUICK_EDIT_MODE| ENABLE_EXTENDED_FLAGS);
+		};
+#if 1
+		if(
+			bRpcContCreateConsole){
+//			QMessageBox::information(NULL, MainWindow::tr("Invocation"), MainWindow::tr("before makeConsole()"));
+			std::cout << "trying to make console, prob. won't see this.." << std::endl;
+			std::cerr << "trying to make console, prob. won't see this.." << std::endl;
+			makeConsole();
+//			if (!AttachConsole(ATTACH_PARENT_PROCESS))
+//			{
+//				QMessageBox::information(NULL, MainWindow::tr("Invocation"), MainWindow::tr("AttachConsole(ATTACH_PARENT_PROCESS) ***Failed!"));
+//			}
+			std::cout << "console alloc attempt done, hope to see this, but currently doubtful..." << std::endl;
+			std::cerr << "console alloc attempt done, hope to see this, but currently doubtful..." << std::endl;
+//			QMessageBox::information(NULL, MainWindow::tr("Invocation"), MainWindow::tr("after makeConsole()"));
+		}
+#else
+#ifdef _WIN32
+		//Create only if started from console...
+		if (AttachConsole(ATTACH_PARENT_PROCESS)) {
+			freopen("CONOUT$", "wt", stdout);
+			freopen("CONOUT$", "wt", stderr);
+			freopen("CONIN$", "rt", stdin);
+		}
+#endif
+#endif
+		bool done = false;
+		std::string inputLine;
+		//QTextStream qtin(std::cin);
+		QTextStream qtin(stdin);
+		//QString line;
+		//QString line;
+		//QRegExp rx("(\\ |\\,|\\.|\\:|\\t)"); //RegEx for ' ' or ',' or '.' or ':' or '\t'
+		//QRegExp rxDelims("(\\ |\\t)"); //RegEx for ' ' or ',' or '.' or ':' or '\t'
+		//QRegExp rxDelims(QString("(\\ |\\t)")); //RegEx for ' ' or ',' or '.' or ':' or '\t'
+		//QRegExp rxDelims( {"(\\ |\\t)"}); //RegEx for ' ' or ',' or '.' or ':' or '\t'
+		//QRegExp rxDelims {"(\\ |\\t)"}; //RegEx for ' ' or ',' or '.' or ':' or '\t'
+		QRegExp rxDelims {QString::fromLatin1("(\\ |\\t)")}; //RegEx for ' ' or ',' or '.' or ':' or '\t'
+		//QRegExp rxDelims = QString::fromLatin1("(\\ |\\t)"); //RegEx for ' ' or ',' or '.' or ':' or '\t'
+		QString quitCmd = QString::fromLatin1("quit");
+		while(!done)
+		{
+#if 0
+			//qt version failing, haven't figured out why...!
+			QString line = qtin.readLine();
+			//auto ptext = line.c_str();
+			std::string s4out = line.toLocal8Bit().constData();
+			printf("entered \"%s\"\n",s4out.c_str());
+			std::cout << "(c)" << s4out.c_str() << std::endl;
+			std::cout << "(cpp)" << s4out << std::endl;
+			std::cout.flush();
+			QMessageBox::information(NULL, MainWindow::tr("RPC"), line);
+			
+			QStringList stringList = line.split(rxDelims);
+			//if(stringList[0] == "quit")
+			if(stringList[0] == quitCmd)
+			{
+				done = true;
+				continue;
+			}
+#else
+			//but seemed to manage some std io appraoch in setup, let's try that!!!
+			std::string sbuf;
+			//cin.getline(sbuf);
+			std::getline(std::cin, sbuf, '\n');
+			std::vector<std::string> tokenList;
+			size_t pos = 0;
+			std::string token;
+			std::string delimiter{ " " };
+			//std::string delimiters{ " \n" };
+			std::string delimiters{ " \r" };
+#if 0
+			while ((pos = sbuf.find(delimiter)) != std::string::npos) {
+				token = s.substr(0, pos);
+				std::cout << token << std::endl;
+				s.erase(0, pos + delimiter.length());
+			}
+#else
+			size_t last = 0; 
+			size_t next = 0; 
+			//while ((next = sbuf.find(delimiter, last)) != std::string::npos) 
+			while ((next = sbuf.find_first_of(delimiters, last)) != std::string::npos)
+			{
+				//cout << s.substr(last, next - last) << endl; 
+				tokenList.emplace_back(sbuf.substr(last, next - last));
+				//last = next + 1; 
+				last = next += delimiter.length();
+			}
+			//What does this do if there are *no* tokens? yields an empty token...
+			tokenList.emplace_back(sbuf.substr(last, next - last));
+			//TBD: review http://www.martinbroadhurst.com/how-to-split-a-string-in-c.html for other approaches to splitting
+			std::cout << "tokens:" << std::endl;
+			for (auto tok : tokenList)
+			{
+				//std::cout << "(len " << tok.length() << ") " << tok << std::endl;
+			}
+			if (tokenList.back() == "quit")
+				break;
+			QMap<QString, QVariant> qmapCmd;
+			for (auto tok : tokenList)
+			{
+//				std::cout << "(len " << tok.length() << ") " << tok << std::endl;
+				//qmapCmd.insert(MainWindow::tr(tokenList[0]), MainWindow::tr(tok));
+				//qmapCmd.insert(QLatin1String(tokenList[0].c_str()), QLatin1String(tok.c_str()));
+//				qmapCmd.insert(QLatin1String(tok.c_str()), QLatin1String(tok.c_str()));
+			}
+			OutputDebugStringA(sbuf.c_str());
+			qmapCmd.insert(QLatin1String("rpcContCmd"), QLatin1String(sbuf.c_str()));
+			bool sent = false;
+			sent = SocketRPC::send(QLatin1String("Mumble"), QLatin1String("self"), qmapCmd);
+#endif
+#endif
+		}
+		return 0 ;
+	}
+	
 	if (bRpcMode) {
 		bool sent = false;
 		QMap<QString, QVariant> param;
@@ -552,7 +752,7 @@ int main(int argc, char **argv) {
 		qApp->postEvent(g.mw, oue);
 #endif
 	} else {
-		g.mw->on_qaServerConnect_triggered(true);
+		//least for now, avoid initial connect dialog ... g.mw->on_qaServerConnect_triggered(true);
 	}
 
 	if (! g.bQuit)

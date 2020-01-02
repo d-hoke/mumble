@@ -43,6 +43,7 @@ class Channel;
 class UserInformation;
 class VoiceRecorderDialog;
 class PTTButtonWidget;
+class ConnectDialog;
 
 struct ShortcutTarget;
 
@@ -181,6 +182,7 @@ class MainWindow : public QMainWindow, public MessageHandler, public Ui::MainWin
 	public slots:
 		void on_qmServer_aboutToShow();
 		void on_qaServerConnect_triggered(bool autoconnect = false);
+		void qaServerConnect_action(QSharedPointer<ConnectDialog> spCD);
 		void on_qaServerDisconnect_triggered();
 		void on_qaServerBanList_triggered();
 		void on_qaServerUserList_triggered();
@@ -295,6 +297,9 @@ class MainWindow : public QMainWindow, public MessageHandler, public Ui::MainWin
 		/// Updates the user's image directory to the given path (any included
 		/// filename is discarded).
 		void updateImagePath(QString filepath) const;
+
+	signals:
+		void qaServerConnect_signal(QSharedPointer<ConnectDialog>);
 
 	public:
 		MainWindow(QWidget *parent);
